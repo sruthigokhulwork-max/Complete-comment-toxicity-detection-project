@@ -1,8 +1,10 @@
-tensorflow-cpu
-numpy
+keras==2.12.0
+tensorflow==2.12.0
+numpy==1.23.5
 streamlit
 pandas
 plotly
 scikit-learn
 matplotlib
 seaborn
+h5py
