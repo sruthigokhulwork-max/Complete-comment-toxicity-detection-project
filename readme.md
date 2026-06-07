@@ -1,5 +1,15 @@
 # Comment Toxicity
 
+---
+title: Comment Toxicity Detection
+emoji: 🛡️
+colorFrom: red
+colorTo: purple
+sdk: streamlit
+sdk_version: "1.32.0"
+app_file: app.py
+pinned: false
+---
 <!-- Description -->
 A deep learning project that detects toxic comments in real time using neural network.
 
