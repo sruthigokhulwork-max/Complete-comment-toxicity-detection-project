@@ -4,3 +4,5 @@ __pycache__/
 *.csv
 *.npy
 best_model.keras
+CommentToxicity.pdf
+tokenizer.pkl
