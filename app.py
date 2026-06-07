@@ -34,6 +34,14 @@ label_colours = {
 
 @st.cache_resource
 def load_artifacts():
+    import os
+    import gdown
+    if not os.path.exists("best_model.keras"):
+        gdown.download(
+            "https://drive.google.com/uc?id=1l6qXGuwnqW84hbGjr_Z94KISxesYxp4D",
+            "best_model.keras",
+            quiet=False
+        )
     model = load_model("best_model.keras")
     with open("tokenizer.pkl", "rb") as f:
         tokenizer = pickle.load(f)
@@ -42,7 +50,6 @@ def load_artifacts():
     with open("history.json", "r") as f:
         history = json.load(f)
     return model, tokenizer, metrics, history
-
 
 model, tokenizer, metrics, history = load_artifacts()
 
