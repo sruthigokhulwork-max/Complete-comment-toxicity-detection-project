@@ -1,8 +1,10 @@
 toxicity_env/
+Complete-comment-toxicity-clean/
 __pycache__/
 *.pyc
 *.csv
 *.npy
-best_model.keras
+*.pkl
+*.keras
+*.h5
 CommentToxicity.pdf
-tokenizer.pkl

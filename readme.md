@@ -104,6 +104,9 @@ Step 11: Building the streamlit application
                 - 3. EDA Dashboard — Label distribution chart, clean vs toxic pie chart, comment length statistics, and key insights.
                 - 4. Model Performance — ROC-AUC scores per label, training history charts, and model architecture table.
 
+Step 12: Streamlit cloud link after deployment
+        -https://huggingface.co/spaces/Sruthi-G/comment-toxicity-detection
+
 <!-- Technologies used -->
 
 Python — Core programming language
