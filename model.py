@@ -1,3 +1,4 @@
+
 # LSTM model - Long Short-Term Memory model
 
 #  We are choosing LSTM (Long Short-Term Memory) was chosen for this project because it reads comments the way a human does,
@@ -31,7 +32,7 @@ label_cols = [
 ]
 
 # Step 3: Loading the processed datas
-x = np.load("X_train.npy")
+x = np.load("x_train.npy")
 y = np.load("y_train.npy")
 
 print(f"X shape : {x.shape}")
@@ -65,6 +66,8 @@ model = Sequential()
 #   --> dense output
 
 # ---> layer 1: embedding
+
+# here it converts integer word IDs into dense vectors of meaning.
 model.add(Embedding(
     input_dim=max_words,
     output_dim=embed_dim,
@@ -72,35 +75,61 @@ model.add(Embedding(
 ))
 
 # --> layer 2: SpatialDroupoutID
+
+# here we randomly drop entire word embeddings during training.
 model.add(SpatialDropout1D(0.2))
+# Rate 0.2 means 20% of word vectors are zeroed out randomly.
 
 # ---> layer 3: LSTM 
+
+# it reads the comment word by word, left to right, and maintains a memory of what it has read so far.
 model.add(LSTM(
     units=lstm_units,
     dropout=0.2,
     recurrent_dropout=0.2
 ))
 
-# ---> layer 4: Dense output
+# ---> layer 4: 
+
+# it takes the LSTM's 128-number summary and produces 6 predictions.
+# here we use sigmoid(it sequences each output between 0 and 1) since our data has multiple label classification.
 model.add(Dense(units=6, activation='sigmoid'))
 
 # Step 6: Compiling 
+
 model.compile(
     loss='binary_crossentropy',
     optimizer='adam',
     metrics=['accuracy']
 )
+# this measures how wrong the model's prediction are.
+# binary_crossentropy is used when each output have independent prediction.
+#  lower the loss, better the model.
+# optimizer = adam,the algorithm that adjusts the model's internal numbers
+#   to reduce the loss after each batch.
+# we track accuracy during training to watch progress.
 
 model.summary()
 
 # Step 7: Callbacks
+
+# These are automatic helpers that monitor training and take action when certain conditions are met.
+# --> earlystopping
+# --> ReduceLROnPlateau
+# --> modelcheckpoint
+
+# ---> EarlyStopping
 early_stop = EarlyStopping(
     monitor='val_loss',
     patience=3,
     restore_best_weights=True,
     verbose=1
 )
+# it monitors validation loss after each epoch.
+# if it does not improve for 3 consecutive epochs,the training stops.
+# restore_best_weights=True means it reverts to the best epoch's weights when training stops, not the last epoch's weights.
 
+# ---> ReduceLROnPlateau
 reduce_lr = ReduceLROnPlateau(
     monitor='val_loss',
     factor=0.5,
@@ -108,66 +137,43 @@ reduce_lr = ReduceLROnPlateau(
     min_lr=0.0001,
     verbose=1
 )
+# LR = Learning Rate. It controls how big each adjustment step is.
+# if validation loss stops improving for 2 epochs, then multiply the learning rate by 0.5 (make steps smaller).
+# min_lr=0.0001 means it never reduces below this floor value.
 
+# ---> ModelCheckpoint
 checkpoint = ModelCheckpoint(
     filepath='best_model.keras',
     monitor='val_loss',
     save_best_only=True,
     verbose=1
 )
-
+# it saves the model to a file after every epoch where validation loss improved.
 print("Callbacks ready:")
 print("  EarlyStopping     — stops if no improvement for 3 epochs")
 print("  ReduceLROnPlateau — halves learning rate if stuck")
 print("  ModelCheckpoint   — saves best model automatically")
 
-# Step 8: Class weights to handle remaining class imbalance
-# ─────────────────────────────────────────────────────────────────
-# Even after oversampling, we add class weights as a second layer
-# of imbalance correction. This tells the model to penalize itself
-# MORE heavily when it misses rare label predictions.
-#
-# How class_weight works in multi-label:
-# Keras applies class_weight per SAMPLE based on which labels
-# that sample has. A threat comment with weight 5.0 contributes
-# 5x more to the loss than a normal comment.
-#
-# Weights chosen based on inverse frequency after oversampling:
-#   toxic        → 1.0  (34,919 examples — well learned)
-#   severe_toxic → 2.0  (11,220 examples — moderate boost)
-#   obscene      → 1.0  (24,192 examples — well learned)
-#   threat       → 5.0  (8,586 examples  — needs extra attention)
-#   insult       → 1.0  (23,766 examples — well learned)
-#   identity_hate→ 2.0  (11,152 examples — moderate boost)
-# ─────────────────────────────────────────────────────────────────
+# Step 8: Traing the model.
 
-class_weight_dict = {
-    0: 1.0,   # toxic
-    1: 2.0,   # severe_toxic
-    2: 1.0,   # obscene
-    3: 5.0,   # threat — still needs most help
-    4: 1.0,   # insult
-    5: 2.0    # identity_hate
-}
-
-print("\nClass weights applied:")
-for i, (label, weight) in enumerate(zip(label_cols, class_weight_dict.values())):
-    print(f"  {label:<20} weight: {weight}")
-
-# Step 9: Training the model
 history = model.fit(
     x_train, y_train,
     validation_data=(x_val, y_val),
     epochs=epochs,
     batch_size=batch_size,
     callbacks=[early_stop, reduce_lr, checkpoint],
-    class_weight=class_weight_dict,
     verbose=1
 )
+# model.fit() is the actual training call.
 
-# Step 10: Plotting training history
+# Step 9: Plotting training history
+
+#  history.history contains the loss and accuracy values recorded after every epoch during training.
+# --> loss plot
+# --> accuracy plot
+
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-
+# ---> loss plot
 axes[0].plot(history.history['loss'],     label='Train loss',      color='blue')
 axes[0].plot(history.history['val_loss'], label='Validation loss', color='orange')
 axes[0].set_title('Loss per epoch')
@@ -175,6 +181,7 @@ axes[0].set_xlabel('Epoch')
 axes[0].set_ylabel('Loss')
 axes[0].legend()
 
+# ---> accuracy plot
 axes[1].plot(history.history['accuracy'],     label='Train accuracy',      color='blue')
 axes[1].plot(history.history['val_accuracy'], label='Validation accuracy', color='orange')
 axes[1].set_title('Accuracy per epoch')
@@ -187,22 +194,32 @@ plt.savefig("training_history.png")
 plt.show()
 print("Saved: training_history.png")
 
-# Step 11: Evaluating the model by ROC-AUC
+# Step 10: Evaluating the model by ROC-AUC
+
+# roc_auc_score from sklearn calculates AUC for each label
+# and we average them to get one final score.
+
 from sklearn.metrics import roc_auc_score
 
+# getting model prediction
 y_pred = model.predict(x_val, verbose=1)
 
+# calculating auc for each label.
 print("\nROC-AUC per label:")
 auc_scores = {}
 for i, label in enumerate(label_cols):
     auc = roc_auc_score(y_val[:, i], y_pred[:, i])
     auc_scores[label] = round(float(auc), 4)
     print(f"  {label:<20} AUC: {auc:.4f}")
+# y_val[:, i]  → true labels for label i (all rows, column i)
+# y_pred[:, i] → predicted probabilities for label i
 
+# calculating the auc for for all labels
 mean_auc = np.mean(list(auc_scores.values()))
 auc_scores["mean_auc"] = round(float(mean_auc), 4)
 print(f"\n  Mean AUC (overall): {mean_auc:.4f}")
 
+# Interpreting the result
 if mean_auc >= 0.95:
     print("  Excellent model performance")
 elif mean_auc >= 0.90:
@@ -212,11 +229,14 @@ elif mean_auc >= 0.85:
 else:
     print("  Model needs improvement")
 
-# Step 12: Saving metrics and history
+# Step 11: Saving the metrics and the final model.
+
+# --> Saving AUC scores as JSON
 with open("metrics.json", "w") as f:
     json.dump(auc_scores, f, indent=4)
 print("Saved: metrics.json")
 
+# --> # Saving training history for Streamlit dashboard
 history_dict = {
     "loss"         : history.history["loss"],
     "val_loss"     : history.history["val_loss"],
@@ -227,9 +247,14 @@ with open("history.json", "w") as f:
     json.dump(history_dict, f, indent=4)
 print("Saved: history.json")
 
-# Step 13: Final Summary
+# Step 12: Summary
+
 print("\nTRAINING COMPLETE — SUMMARY")
+
 print(f"  Best model saved : best_model.keras")
 print(f"  Mean AUC         : {mean_auc:.4f}")
 print(f"  Epochs run       : {len(history.history['loss'])}")
 print(f"  Final val_loss   : {history.history['val_loss'][-1]:.4f}")
+
+
+

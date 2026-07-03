@@ -43,45 +43,10 @@ test  = test.drop_duplicates(subset="comment_text").reset_index(drop=True)
 print(f"Train : removed {before_train - len(train)} duplicates")
 print(f"Test  : removed {before_test  - len(test)}  duplicates")
 
-# --> Step 3.5: Oversampling rare labels
-# ─────────────────────────────────────────────────────────────────
-# Class imbalance problem:
-#   threat        → only   478 examples (0.30%) — model barely learns threats
-#   identity_hate → only 1,405 examples (0.88%) — model weakly detects group hate
-#   severe_toxic  → only 1,595 examples (1.00%) — model underperforms here too
-#
-# Fix: duplicate rare label rows so the model sees them more often
-#   threat        × 15 → ~7,170 examples (closer to other labels)
-#   identity_hate × 5  → ~7,025 examples
-#   severe_toxic  × 4  → ~6,380 examples
-#
-# NOTE: We oversample BEFORE cleaning so the tokenizer
-# also learns from the duplicated rows — consistent pipeline.
-# ─────────────────────────────────────────────────────────────────
-
-print("\nOversampling rare labels to fix class imbalance")
-print(f"Label counts BEFORE oversampling:")
-print(train[label_cols].sum().to_string())
-
-threat_rows       = train[train['threat'] == 1]
-identity_rows     = train[train['identity_hate'] == 1]
-severe_toxic_rows = train[train['severe_toxic'] == 1]
-
-train = pd.concat(
-    [train]
-    + [threat_rows] * 15
-    + [identity_rows] * 5
-    + [severe_toxic_rows] * 4
-).sample(frac=1, random_state=42).reset_index(drop=True)
-
-print(f"\nTraining rows AFTER oversampling: {len(train):,}")
-print(f"Label counts AFTER oversampling:")
-print(train[label_cols].sum().to_string())
-
 # --> Step 4: Cleaning the texts
 
 # here we basically remove the noises from the comments.
-#  we convert the comments to lower case since tokenization is case sensitive
+#  we comvert the comments to lower case since tokenization is case senstitive 
 
 def clean_text(text):
     text = str(text)
@@ -123,7 +88,7 @@ empty_train = (train["comment_clean"].str.strip() == "").sum()
 empty_test  = (test["comment_clean"].str.strip()  == "").sum()
 print(f"\nEmpty comments after cleaning — train: {empty_train}, test: {empty_test}")
 
-# --> replacing with placeholder if empty comments exists
+# --> replacing with placeholder if empty comments exixts
 if empty_train > 0:
     train["comment_clean"] = train["comment_clean"].replace("", "unknown")
 if empty_test > 0:
@@ -131,8 +96,8 @@ if empty_test > 0:
 
 # Step 5: Tokenization
 
-# Since, neural networks only understand numbers and not words. The Tokenizer builds a vocabulary,
-# a dictionary that maps every unique word to a unique integer ID.
+# Since, neural networks only understand numbers and not words.The Tokenizer builds a vocabulary,a dictionary that maps
+# every unique word to a unique integer ID.
 # Eg: {"the": 1, "you": 2, "is": 3, "hate": 312, "idiot": 847, ...}
 # Then it converts every comment from words to a list of integers:
 # "i hate you idiot" → [45, 312, 2, 847]
@@ -160,7 +125,7 @@ for word, idx in sample:
 
 # Step 6: Converting to sequence
 
-# here we convert the strings into integers
+# here  we convert the strings into integers
 # eg: "you are an idiot" → [2, 17, 11, 847]
 
 # We apply the SAME tokenizer to both train and test.
@@ -176,8 +141,9 @@ print(" ", train_sequences[1][:15])
 
 # Step 7: Padding
 
-# Every comment is now a different length list of integers.
-# Neural networks process data in batches — all items must be the SAME length.
+# Every comment is now a different length list of integers. Comment 1 might have 23 numbers. Comment 2 might have 150.
+# Neural networks process data in batches — groups of comments processed simultaneously. 
+# All items in a batch must be the SAME length, like rows in a matrix must have equal columns.
 
 padding='post'
 truncating='post'
@@ -196,6 +162,7 @@ x_test = pad_sequences(
 )
 
 print(f"X_train shape : {x_train.shape}")
+
 print(f"X_test shape  : {x_test.shape}")
 
 # --> Showing one padded example
@@ -204,6 +171,7 @@ print(" ", x_train[1])
 
 
 # Step 8: extracting the labels
+
 
 y_train = train[label_cols].values.astype("float32")
 
@@ -214,7 +182,7 @@ print("\nExample:")
 print("  Comment :", train["comment_clean"].iloc[1][:80])
 print("  Labels  :", dict(zip(label_cols, y_train[1])))
 
-# Step 9: Saving
+# Step 9: Saving 
 
 # Saving tokenizer using pickle
 # "wb" = write binary mode (required for pickle)
@@ -229,17 +197,13 @@ print("Saved :x_train.npy")
 np.save("y_train.npy", y_train)
 np.save("x_test.npy", x_test)
 
+
 # Step 10: Final Summary
 
-print(f"\n{'='*50}")
-print(f"FINAL SUMMARY")
-print(f"{'='*50}")
-print(f"  Vocabulary size       : {max_words:,} words")
-print(f"  Sequence length       : {max_len} per comment")
-print(f"  x_train shape         : {x_train.shape} - model input")
-print(f"  y_train shape         : {y_train.shape} - model targets")
-print(f"  x_test shape          : {x_test.shape} - for final predictions")
-print(f"  Threat examples       : {int(train['threat'].sum()):,} (after oversampling)")
-print(f"  Identity hate examples: {int(train['identity_hate'].sum()):,} (after oversampling)")
-print(f"  Severe toxic examples : {int(train['severe_toxic'].sum()):,} (after oversampling)")
-print(f"{'='*50}")
+print(f"  Vocabulary size : {max_words:,} words")
+print(f"  Sequence length : {max_len} per comment")
+print(f"  x_train shape   : {x_train.shape} -  model input")
+print(f"  y_train shape   : {y_train.shape} - model targets")
+print(f"  x_test shape    : {x_test.shape} - for final predictions")
+
+

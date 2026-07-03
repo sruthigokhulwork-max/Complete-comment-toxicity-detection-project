@@ -519,7 +519,7 @@ elif page == "Predict":
             st.warning("Please enter a comment before clicking Analyse.")
         elif not is_classifiable(comment):
             st.warning(
-                "This comment contains no classifiable text "
+                "⚠️ This comment contains no classifiable text "
                 "(only symbols or numbers). "
                 "Please enter a comment with actual words."
             )
@@ -562,7 +562,7 @@ elif page == "Predict":
 
         if keyword_detected:
             st.info(
-                f" Rule-based detection also flagged: "
+                f"⚠️ Rule-based detection also flagged: "
                 f"**{', '.join(keyword_detected)}** (keyword match)"
             )
 
@@ -601,9 +601,9 @@ elif page == "Predict":
                 for label, v in predictions.items()
             ],
             "Detected"   : [
-                " Yes (ML)" if v >= THRESHOLDS[label]
-                else " Yes (Rule)" if label in keyword_detected
-                else "No"
+                "✅ Yes (ML)" if v >= THRESHOLDS[label]
+                else "✅ Yes (Rule)" if label in keyword_detected
+                else "❌ No"
                 for label, v in predictions.items()
             ]
         })
@@ -695,7 +695,7 @@ elif page == "Predict":
                     results_df[col] = results_df[col].round(4)
 
                 st.success(
-                    f" Predictions complete — "
+                    f"✅ Predictions complete — "
                     f"{len(results_df):,} comments analysed."
                 )
                 st.dataframe(results_df, use_container_width=True)
@@ -930,56 +930,56 @@ elif page == "Model Performance":
     st.markdown("---")
     st.markdown("### Improvements made")
     st.success(
-        " Oversampling: threat 478 → 8,586 examples; "
+        "✅ Oversampling: threat 478 → 8,586 examples; "
         "identity_hate 1,405 → 11,152 examples"
     )
     st.success(
-        " Class weights: threat 5x penalty, "
+        "✅ Class weights: threat 5x penalty, "
         "identity_hate 2x penalty during training"
     )
     st.success(
-        " Hybrid detection: LSTM + keyword matching "
+        "✅ Hybrid detection: LSTM + keyword matching "
         "(200+ phrases from real data) + intent word scoring"
     )
     st.success(
-        " Negation handling: 'I would never kill you' "
+        "✅ Negation handling: 'I would never kill you' "
         "correctly classified as NOT a threat"
     )
     st.success(
-        " Empty comment detection: gibberish/symbols-only "
+        "✅ Empty comment detection: gibberish/symbols-only "
         "comments flagged with helpful warning"
     )
     st.success(
-        " Batch CSV prediction: all comments processed "
+        "✅ Batch CSV prediction: all comments processed "
         "in a single model call for maximum speed"
     )
-    st.success(" Mean AUC improved: 0.9719 → 0.9735")
-    st.success(" Threat AUC improved: 0.9468 → 0.9521")
+    st.success("✅ Mean AUC improved: 0.9719 → 0.9735")
+    st.success("✅ Threat AUC improved: 0.9468 → 0.9521")
 
     st.markdown("---")
     st.markdown("### Known limitations & future improvements")
     st.warning(
-        " **Sarcasm** — 'oh great, another genius' not detected. "
+        "⚠️ **Sarcasm** — 'oh great, another genius' not detected. "
         "Requires BERT transformer model for full sentence "
         "context understanding."
     )
     st.warning(
-        " **Wikipedia language bias** — model trained on "
+        "⚠️ **Wikipedia language bias** — model trained on "
         "Wikipedia comments (2017-2018). May underperform on "
         "modern social media language (Twitter, TikTok, gaming)."
     )
     st.warning(
-        " **Deep implicit threats** — highly indirect language "
+        "⚠️ **Deep implicit threats** — highly indirect language "
         "like 'your time is running short' may be missed. "
         "BERT would handle these semantically."
     )
     st.warning(
-        " **Literary/academic false positives** — titles or "
+        "⚠️ **Literary/academic false positives** — titles or "
         "academic discussion containing violent words may be "
         "flagged by keyword system."
     )
     st.info(
-        " **Phase 2 upgrade path**: Replace LSTM with "
+        "💡 **Phase 2 upgrade path**: Replace LSTM with "
         "DistilBERT for semantic understanding, sarcasm detection, "
         "negation handling, and cross-domain generalisation."
     )
