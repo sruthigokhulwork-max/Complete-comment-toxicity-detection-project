@@ -519,7 +519,7 @@ elif page == "Predict":
             st.warning("Please enter a comment before clicking Analyse.")
         elif not is_classifiable(comment):
             st.warning(
-                " This comment contains no classifiable text "
+                "This comment contains no classifiable text "
                 "(only symbols or numbers). "
                 "Please enter a comment with actual words."
             )
@@ -562,7 +562,7 @@ elif page == "Predict":
 
         if keyword_detected:
             st.info(
-                f"⚠️ Rule-based detection also flagged: "
+                f" Rule-based detection also flagged: "
                 f"**{', '.join(keyword_detected)}** (keyword match)"
             )
 
@@ -601,9 +601,9 @@ elif page == "Predict":
                 for label, v in predictions.items()
             ],
             "Detected"   : [
-                "✅ Yes (ML)" if v >= THRESHOLDS[label]
-                else "✅ Yes (Rule)" if label in keyword_detected
-                else "❌ No"
+                " Yes (ML)" if v >= THRESHOLDS[label]
+                else " Yes (Rule)" if label in keyword_detected
+                else "No"
                 for label, v in predictions.items()
             ]
         })
@@ -695,7 +695,7 @@ elif page == "Predict":
                     results_df[col] = results_df[col].round(4)
 
                 st.success(
-                    f"✅ Predictions complete — "
+                    f" Predictions complete — "
                     f"{len(results_df):,} comments analysed."
                 )
                 st.dataframe(results_df, use_container_width=True)
@@ -942,7 +942,7 @@ elif page == "Model Performance":
         "(200+ phrases from real data) + intent word scoring"
     )
     st.success(
-        " Negation handling: I would never kill you "
+        " Negation handling: 'I would never kill you' "
         "correctly classified as NOT a threat"
     )
     st.success(
