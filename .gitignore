@@ -1,0 +1,6 @@
+toxicity_env/
+__pycache__/
+*.pyc
+*.csv
+*.npy
+best_model.keras
